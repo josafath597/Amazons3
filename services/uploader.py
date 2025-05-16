@@ -1,12 +1,24 @@
+"""Workers para ejecutar funciones de carga y
+subida en hilos separados, sin bloquear la interfaz."""
+
 import customtkinter
-from s3.upload import subir_archivo_a_s3
+
 from s3.client import actualizar_lista_buckets
+from s3.upload import subir_archivo_a_s3
 from widgets.loader import ocultar_loader
 
-def subir_archivo_worker(*args, loader: customtkinter.CTkProgressBar, root: customtkinter.CTk, **kwargs):
+
+def subir_archivo_worker(
+    *args, loader: customtkinter.CTkProgressBar, root: customtkinter.CTk, **kwargs
+) -> None:
     """
-    Corre subir_archivo_a_s3 en un hilo y oculta el loader al terminar,
-    sin importar si hubo error o no.
+    Ejecuta la función subir_archivo_a_s3 en un hilo separado y oculta el loader al finalizar.
+
+    Args:
+        *args: Argumentos posicionales para subir_archivo_a_s3.
+        loader (CTkProgressBar): Barra de progreso a ocultar.
+        root (CTk): Ventana principal, usada para volver al hilo principal.
+        **kwargs: Argumentos con nombre para subir_archivo_a_s3.
     """
     try:
         subir_archivo_a_s3(*args, **kwargs)
@@ -14,9 +26,20 @@ def subir_archivo_worker(*args, loader: customtkinter.CTkProgressBar, root: cust
         # volvemos al hilo principal para tocar la GUI
         root.after(0, lambda: ocultar_loader(loader))
 
-def actualizar_lista_worker(*args, loader: customtkinter.CTkProgressBar, root: customtkinter.CTk, **kwargs):
+
+def actualizar_lista_worker(
+    *args, loader: customtkinter.CTkProgressBar, root: customtkinter.CTk, **kwargs
+) -> None:
+    """
+    Ejecuta la función actualizar_lista_buckets en un hilo separado y oculta el loader al finalizar.
+
+    Args:
+        *args: Argumentos posicionales para actualizar_lista_buckets.
+        loader (CTkProgressBar): Barra de progreso a ocultar.
+        root (CTk): Ventana principal, usada para volver al hilo principal.
+        **kwargs: Argumentos con nombre para actualizar_lista_buckets.
+    """
     try:
         actualizar_lista_buckets(*args, **kwargs)
     finally:
         root.after(0, lambda: ocultar_loader(loader))
-        
