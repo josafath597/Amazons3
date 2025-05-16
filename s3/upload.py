@@ -114,19 +114,15 @@ def subir_archivo_a_s3(
 
         nombre_bucket = menu_bucket.get()
         nombre_personalizado = textbox_name_file.get().strip()
-        nombre_objeto = (
-            nombre_personalizado
-            if nombre_personalizado
-            else os.path.basename(archivo_seleccionado)
-        )
-
-        nombre_objeto = re.sub(r"[^\w\-. ]", "_", nombre_objeto)
-
-        if "." not in nombre_objeto:
-            extension_real = os.path.splitext(archivo_seleccionado)[1]
-            nombre_sin_ext = os.path.splitext(nombre_personalizado)[0]
-            nombre_objeto = f"{nombre_sin_ext}{extension_real}"
-
+        # Quitamos la extensión escrita por el usuario (por si puso una falsa)
+        nombre_sin_ext = os.path.splitext(nombre_personalizado)[0].strip()
+        # 🔧 Reemplazamos espacios por guiones bajos y limpiamos caracteres especiales
+        nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
+        # Obtenemos la extensión real del archivo
+        extension_real = os.path.splitext(archivo_seleccionado)[1].lower()
+        # Unimos nombre limpio + extensión real y pasamos todo a minúsculas
+        nombre_objeto = f"{nombre_sin_ext}{extension_real}".lower()
+        print(f"✅ Nombre final para S3: {nombre_objeto}")
         extra_args = {}
         if es_publico.get():
             extra_args["ACL"] = "public-read"
