@@ -1,0 +1,16 @@
+# Entornos virtuales
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Archivos de sistema
+.DS_Store
+
+# Archivos de configuración local
+aws_config.json
+
+# Compilados
+dist/
+build/
+*.spec
