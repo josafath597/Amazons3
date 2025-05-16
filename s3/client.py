@@ -5,6 +5,7 @@ from typing import List
 import boto3
 import boto3.exceptions
 import customtkinter
+from botocore.exceptions import BotoCoreError, ClientError
 
 
 def obtener_buckets(access_key: str, secret_key: str, region: str) -> List[str]:
@@ -30,7 +31,7 @@ def obtener_buckets(access_key: str, secret_key: str, region: str) -> List[str]:
         response = s3.list_buckets()
         nombres = [bucket["Name"] for bucket in response["Buckets"]]
         return nombres
-    except boto3.exceptions.S3UploadFailedError as e:
+    except (BotoCoreError, ClientError) as e:
         print(f"❌ Error al obtener buckets: {e}")
         return []
 

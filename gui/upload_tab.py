@@ -8,8 +8,7 @@ import customtkinter
 from s3.upload import hacer_publico_ultimo_archivo
 from services.uploader import subir_archivo_worker
 from widgets.loader import crear_loader_padre, mostrar_loader
-
-from .actions import copiar_url, seleccionar_archivo
+from gui.actions import copiar_url, seleccionar_archivo
 
 
 def crear_tab_subir(

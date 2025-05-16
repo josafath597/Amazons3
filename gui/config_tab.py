@@ -1,5 +1,6 @@
 """Crea y configura la pestaña de ajustes de AWS dentro de la interfaz gráfica."""
 
+import threading
 from typing import Any, Dict
 
 import customtkinter
@@ -10,7 +11,8 @@ from config.aws_config import (
     guardar_config,
     limpiar_campos,
 )
-from s3.client import actualizar_lista_buckets
+from services.uploader import actualizar_lista_worker
+from widgets.loader import crear_loader_grid, mostrar_loader_grid
 
 
 def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
@@ -61,12 +63,28 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
         menu_bucket.set(datos.get("bucket", "Sin cargar"))
         config.update(datos)
 
+    loader = crear_loader_grid(tab, row=99, column=0, columnspan=2, pady=(20, 10))
+
+    def lanzar_actualizar_lista_buckets():
+        mostrar_loader_grid(loader)
+        threading.Thread(
+            target=actualizar_lista_worker,
+            kwargs={
+                "entry_access_key": entry_access,
+                "entry_secret_key": entry_secret,
+                "entry_region": entry_region,
+                "menu_bucket": menu_bucket,
+                "label_confirm": label_confirm,
+                "loader": loader,
+                "root": tab,
+            },
+            daemon=True,
+        ).start()
+
     boton_cargar = customtkinter.CTkButton(
         tab,
         text="Cargar Buckets",
-        command=lambda: actualizar_lista_buckets(
-            entry_access, entry_secret, entry_region, menu_bucket, label_confirm
-        ),
+        command=lanzar_actualizar_lista_buckets,
     )
     boton_cargar.grid(row=4, column=0, columnspan=2, pady=5)
 

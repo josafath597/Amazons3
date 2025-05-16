@@ -5,7 +5,7 @@ import customtkinter
 
 from s3.client import actualizar_lista_buckets
 from s3.upload import subir_archivo_a_s3
-from widgets.loader import ocultar_loader
+from widgets.loader import ocultar_loader_grid, ocultar_loader
 
 
 def subir_archivo_worker(
@@ -42,4 +42,4 @@ def actualizar_lista_worker(
     try:
         actualizar_lista_buckets(*args, **kwargs)
     finally:
-        root.after(0, lambda: ocultar_loader(loader))
+        root.after(0, lambda: ocultar_loader_grid(loader))
