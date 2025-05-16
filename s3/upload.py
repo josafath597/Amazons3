@@ -123,8 +123,9 @@ def subir_archivo_a_s3(
         nombre_objeto = re.sub(r"[^\w\-. ]", "_", nombre_objeto)
 
         if "." not in nombre_objeto:
-            extension = os.path.splitext(archivo_seleccionado)[1]
-            nombre_objeto += extension
+            extension_real = os.path.splitext(archivo_seleccionado)[1]
+            nombre_sin_ext = os.path.splitext(nombre_personalizado)[0]
+            nombre_objeto = f"{nombre_sin_ext}{extension_real}"
 
         extra_args = {}
         if es_publico.get():
