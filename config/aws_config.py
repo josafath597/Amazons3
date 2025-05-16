@@ -2,6 +2,7 @@
 
 import json
 import os
+from typing import Any, Dict
 import boto3
 from botocore.exceptions import ClientError
 
@@ -9,6 +10,11 @@ import customtkinter
 
 CONFIG_FILE = "aws_config.json"
 config = {"access_key": "", "secret_key": "", "bucket": "", "region": "us-east-1"}
+
+
+def config_esta_completa(cfg: dict) -> bool:
+    """Devuelve True si todos los campos de la configuración AWS están llenos."""
+    return all(cfg.get(k) for k in ["access_key", "secret_key", "region", "bucket"])
 
 
 def guardar_config_archivo():
@@ -35,6 +41,7 @@ def guardar_config(
     entry_region: customtkinter.CTkEntry,
     menu_bucket: customtkinter.CTkOptionMenu,
     label_confirm: customtkinter.CTkLabel,
+    refs: Dict[str, Any],
 ) -> None:
     """Guarda los valores ingresados por el usuario en la configuración."""
     access_key = entry_access_key.get()
@@ -42,16 +49,33 @@ def guardar_config(
     region = entry_region.get()
     bucket = menu_bucket.get()
 
-    if not validar_config_aws(access_key, secret_key, region, bucket):
-        label_confirm.configure(text="❌ Configuración inválida. Verifica tus datos.")
+    todos_vacios = not any([access_key, secret_key, region, bucket])
+    todos_llenos = all([access_key, secret_key, region, bucket])
+
+    if not todos_vacios and not todos_llenos:
+        label_confirm.configure(text="⚠️ Llena todos los campos o déjalos todos vacíos.")
         return
 
     config["access_key"] = access_key
     config["secret_key"] = secret_key
     config["bucket"] = bucket
     config["region"] = region
+
+    # ✅ Validar si es configuración válida antes de guardar
+    if todos_llenos:
+        if not validar_config_aws(access_key, secret_key, region, bucket):
+            label_confirm.configure(
+                text="❌ Configuración no válida. Verifica tus datos."
+            )
+            return
+
     guardar_config_archivo()
     label_confirm.configure(text="✅ Configuración guardada con éxito")
+
+    if "boton_seleccionar" in refs:
+        refs["boton_seleccionar"].configure(
+            state="normal" if todos_llenos else "disabled"
+        )
 
 
 def limpiar_campos(
@@ -65,7 +89,7 @@ def limpiar_campos(
     entry_access_key.delete(0, "end")
     entry_secret_key.delete(0, "end")
     entry_region.delete(0, "end")
-    menu_bucket.set("Sin cargar")
+    menu_bucket.set("")
     label_confirm.configure(text="")
 
 

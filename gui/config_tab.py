@@ -10,6 +10,7 @@ from config.aws_config import (
     config,
     guardar_config,
     limpiar_campos,
+    config_esta_completa,
 )
 from services.uploader import actualizar_lista_worker
 from widgets.loader import crear_loader_grid, mostrar_loader_grid
@@ -52,18 +53,20 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
     )
 
     # Menú Bucket y Botones
-    menu_bucket = customtkinter.CTkOptionMenu(tab, values=["Sin cargar"])
+    menu_bucket = customtkinter.CTkOptionMenu(tab, values=[""])
     menu_bucket.grid(row=5, column=0, columnspan=2, pady=5)
 
     datos = cargar_config_archivo()
+    print(datos)
     if datos:
         entry_access.insert(0, datos.get("access_key", ""))
         entry_secret.insert(0, datos.get("secret_key", ""))
         entry_region.insert(0, datos.get("region", ""))
-        menu_bucket.set(datos.get("bucket", "Sin cargar"))
+        menu_bucket.set(datos.get("bucket", ""))
         config.update(datos)
         if "boton_seleccionar" in refs:
-            refs["boton_seleccionar"].configure(state="normal")
+            estado = "normal" if config_esta_completa(config) else "disabled"
+            refs["boton_seleccionar"].configure(state=estado)
 
     loader = crear_loader_grid(tab, row=99, column=0, columnspan=2, pady=(20, 10))
 
@@ -99,7 +102,7 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
         tab,
         text="Guardar configuración",
         command=lambda: guardar_config(
-            entry_access, entry_secret, entry_region, menu_bucket, label_confirm
+            entry_access, entry_secret, entry_region, menu_bucket, label_confirm, refs
         ),
     )
     boton_guardar.grid(row=7, column=0, columnspan=2, pady=20)
