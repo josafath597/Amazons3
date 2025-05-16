@@ -2,6 +2,8 @@
 
 import json
 import os
+import boto3
+from botocore.exceptions import ClientError
 
 import customtkinter
 
@@ -35,10 +37,19 @@ def guardar_config(
     label_confirm: customtkinter.CTkLabel,
 ) -> None:
     """Guarda los valores ingresados por el usuario en la configuración."""
-    config["access_key"] = entry_access_key.get()
-    config["secret_key"] = entry_secret_key.get()
-    config["bucket"] = menu_bucket.get()
-    config["region"] = entry_region.get()
+    access_key = entry_access_key.get()
+    secret_key = entry_secret_key.get()
+    region = entry_region.get()
+    bucket = menu_bucket.get()
+
+    if not validar_config_aws(access_key, secret_key, region, bucket):
+        label_confirm.configure(text="❌ Configuración inválida. Verifica tus datos.")
+        return
+
+    config["access_key"] = access_key
+    config["secret_key"] = secret_key
+    config["bucket"] = bucket
+    config["region"] = region
     guardar_config_archivo()
     label_confirm.configure(text="✅ Configuración guardada con éxito")
 
@@ -56,3 +67,32 @@ def limpiar_campos(
     entry_region.delete(0, "end")
     menu_bucket.set("Sin cargar")
     label_confirm.configure(text="")
+
+
+def validar_config_aws(
+    access_key: str, secret_key: str, region: str, bucket: str
+) -> bool:
+    """
+    Valida si la configuración de AWS es correcta intentando acceder al bucket.
+
+    Args:
+        access_key (str): Clave de acceso AWS.
+        secret_key (str): Clave secreta AWS.
+        region (str): Región configurada.
+        bucket (str): Nombre del bucket a validar.
+
+    Returns:
+        bool: True si la configuración es válida, False si hay error.
+    """
+    try:
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region,
+        )
+        s3.head_bucket(Bucket=bucket)
+        return True
+    except ClientError as e:
+        print(f"❌ Error al validar configuración AWS: {e}")
+        return False

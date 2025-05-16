@@ -39,7 +39,10 @@ def actualizar_lista_worker(
         root (CTk): Ventana principal, usada para volver al hilo principal.
         **kwargs: Argumentos con nombre para actualizar_lista_buckets.
     """
+    boton_seleccionar = kwargs.pop("boton_seleccionar", None)
     try:
         actualizar_lista_buckets(*args, **kwargs)
+        if boton_seleccionar:
+            root.after(0, lambda: boton_seleccionar.configure(state="normal"))
     finally:
         root.after(0, lambda: ocultar_loader_grid(loader))

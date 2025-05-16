@@ -56,7 +56,7 @@ def crear_tab_subir(
     es_publico.pack(pady=5)
 
     boton_seleccionar = customtkinter.CTkButton(
-        tab, text="Seleccionar archivo", state="normal"
+        tab, text="Seleccionar archivo", state="disabled"
     )
     boton_subir = customtkinter.CTkButton(tab, text="Subir archivo", state="disabled")
     boton_publico = customtkinter.CTkButton(tab, text="Hacer público", state="disabled")
@@ -131,4 +131,5 @@ def crear_tab_subir(
         "boton_publico": boton_publico,
         "boton_copiar": boton_copiar,
         "es_publico": es_publico,
+        "boton_seleccionar": boton_seleccionar,
     }

@@ -7,6 +7,7 @@ import customtkinter
 from core.utils import cerrar_app
 from gui.config_tab import crear_tab_config
 from gui.upload_tab import crear_tab_subir
+from config.aws_config import cargar_config_archivo
 
 
 def mostrar_ventana() -> None:
@@ -32,8 +33,19 @@ def mostrar_ventana() -> None:
 
     # Construir cada pestaña con funciones auxiliares
     refs: Dict[str, Any] = {}  # diccionario vacío
-    crear_tab_config(tab_conf, refs)
+
+    # 👉 Carga config desde archivo antes
+    datos = cargar_config_archivo()
+    hay_config = all(
+        datos.get(k) for k in ("access_key", "secret_key", "region", "bucket")
+    )
+
     refs |= crear_tab_subir(app, tab_subir, refs)  # llena refs
+    crear_tab_config(tab_conf, refs)
+
+    # Si hay config, activa el botón aquí directamente
+    if hay_config and "boton_seleccionar" in refs:
+        refs["boton_seleccionar"].configure(state="normal")
 
     # Handler de cierre
     app.protocol("WM_DELETE_WINDOW", lambda: cerrar_app(app))

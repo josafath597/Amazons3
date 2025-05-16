@@ -62,6 +62,8 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
         entry_region.insert(0, datos.get("region", ""))
         menu_bucket.set(datos.get("bucket", "Sin cargar"))
         config.update(datos)
+        if "boton_seleccionar" in refs:
+            refs["boton_seleccionar"].configure(state="normal")
 
     loader = crear_loader_grid(tab, row=99, column=0, columnspan=2, pady=(20, 10))
 
@@ -77,6 +79,7 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
                 "label_confirm": label_confirm,
                 "loader": loader,
                 "root": tab,
+                "boton_seleccionar": refs.get("boton_seleccionar"),
             },
             daemon=True,
         ).start()

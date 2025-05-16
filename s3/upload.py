@@ -122,7 +122,6 @@ def subir_archivo_a_s3(
         extension_real = os.path.splitext(archivo_seleccionado)[1].lower()
         # Unimos nombre limpio + extensión real y pasamos todo a minúsculas
         nombre_objeto = f"{nombre_sin_ext}{extension_real}".lower()
-        print(f"✅ Nombre final para S3: {nombre_objeto}")
         extra_args = {}
         if es_publico.get():
             extra_args["ACL"] = "public-read"
