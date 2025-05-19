@@ -8,7 +8,7 @@ import customtkinter
 from s3.upload import hacer_publico_ultimo_archivo
 from services.uploader import subir_archivo_worker
 from widgets.loader import crear_loader_padre, mostrar_loader
-from gui.actions import copiar_url, seleccionar_archivo
+from gui.actions import copiar_url, seleccionar_archivo, actualizar_url_preliminar
 
 
 def crear_tab_subir(
@@ -41,6 +41,16 @@ def crear_tab_subir(
         frame_nombre, placeholder_text="Nombre del Archivo", width=300
     )
     textbox_name.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+    title = customtkinter.CTkLabel(tab, text="URL preliminar:")
+    title.pack(pady=(5, 0))
+    label_url_preliminar = customtkinter.CTkLabel(tab, text="")
+    label_url_preliminar.pack(pady=(5, 0))
+
+    textbox_name.bind(
+        "<KeyRelease>",
+        lambda *_: actualizar_url_preliminar(textbox_name, label_url_preliminar, refs),
+    )
 
     # URL
     customtkinter.CTkLabel(tab, text="URL del archivo en S3").pack()
@@ -77,6 +87,7 @@ def crear_tab_subir(
             boton_publico,
             boton_copiar,
         )
+        actualizar_url_preliminar(textbox_name, label_url_preliminar, refs)
 
     # ---- Conectar callbacks (lambda o funciones aparte) ----
     boton_seleccionar.configure(command=seleccionar_y_guardar)
@@ -124,6 +135,7 @@ def crear_tab_subir(
 
     # Devolver referencias compartidas
     return {
+        "title": title,
         "label_archivo": label_archivo,
         "textbox_name": textbox_name,
         "textbox_url": textbox_url,
@@ -132,4 +144,5 @@ def crear_tab_subir(
         "boton_copiar": boton_copiar,
         "es_publico": es_publico,
         "boton_seleccionar": boton_seleccionar,
+        "label_url_preliminar": label_url_preliminar,
     }

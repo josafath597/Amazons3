@@ -2,6 +2,7 @@
 como seleccionar archivos y copiar URLs."""
 
 import os
+import re
 from tkinter import filedialog
 from typing import Any, Dict
 
@@ -86,3 +87,54 @@ def limpiar_tab_subir(refs: Dict[str, Any]) -> None:
     for k in ("boton_copiar", "boton_publico", "boton_subir"):
         if k in refs:
             refs[k].configure(state="disabled")
+
+
+def actualizar_url_preliminar(
+    textbox_name: customtkinter.CTkEntry,
+    label_url_preliminar: customtkinter.CTkLabel,
+    refs: Dict[str, Any],
+) -> None:
+    """
+    Actualiza la etiqueta de URL preliminar con base en el nombre del archivo y configuración actual.
+
+    Args:
+        textbox_name (CTkEntry): Campo donde se escribe el nombre del archivo.
+        label_url_preliminar (CTkLabel): Label donde se mostrará la URL preliminar.
+        refs (Dict[str, Any]): Diccionario con entradas de configuración (bucket, región, etc).
+        archivo_seleccionado (str): Ruta real del archivo seleccionado.
+    """
+    nombre_archivo = textbox_name.get().strip()
+    if not nombre_archivo:
+        label_url_preliminar.configure(text="URL preliminar:")
+        return
+
+    bucket = refs["menu_bucket"].get()
+    region = refs["entry_region"].get()
+    url = generar_url_preliminar(bucket, region, nombre_archivo)
+
+    label_url_preliminar.configure(text=f"🌐{url}")
+
+
+def generar_url_preliminar(bucket: str, region: str, nombre_usuario: str) -> str:
+    """
+    Genera una URL preliminar como la que tendría el archivo en Amazon S3,
+    aplicando la misma lógica de limpieza que se usa en la subida real.
+
+    Args:
+        bucket (str): Nombre del bucket.
+        region (str): Región de AWS.
+        nombre_usuario (str): Nombre escrito por el usuario en el textbox.
+        archivo_seleccionado (str): Ruta del archivo real seleccionado (para extraer la extensión real).
+
+    Returns:
+        str: URL preliminar.
+    """
+    # Quitar extensión escrita por el usuario, si la puso mal
+    nombre_sin_ext = os.path.splitext(nombre_usuario)[0].strip()
+    nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
+
+    # Unir nombre limpio + extensión real, en minúsculas
+    nombre_objeto = f"{nombre_sin_ext}".lower()
+
+    # Armar URL preliminar
+    return f"{bucket}.s3.{region}.amazonaws.com/{nombre_objeto}"

@@ -57,7 +57,6 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
     menu_bucket.grid(row=5, column=0, columnspan=2, pady=5)
 
     datos = cargar_config_archivo()
-    print(datos)
     if datos:
         entry_access.insert(0, datos.get("access_key", ""))
         entry_secret.insert(0, datos.get("secret_key", ""))
