@@ -76,6 +76,15 @@ def guardar_config(
         refs["boton_seleccionar"].configure(
             state="normal" if todos_llenos else "disabled"
         )
+    if "textbox_url" in refs:
+        refs["textbox_url"].configure(state="normal")
+        refs["textbox_url"].delete("0.0", "end")
+        refs["textbox_url"].configure(state="disabled")
+    if "label_archivo" in refs:
+        refs["label_archivo"].configure(text="Ningún archivo seleccionado aún.")
+    for k in ("boton_copiar", "boton_publico", "boton_subir"):
+        if k in refs:
+            refs[k].configure(state="disabled")
 
 
 def limpiar_campos(
