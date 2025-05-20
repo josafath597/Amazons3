@@ -6,6 +6,7 @@ import boto3
 import boto3.exceptions
 import customtkinter
 from botocore.exceptions import BotoCoreError, ClientError
+from core.utils import es_uuid
 
 
 def obtener_buckets(access_key: str, secret_key: str, region: str) -> List[str]:
@@ -62,3 +63,49 @@ def actualizar_lista_buckets(
         label_confirm.configure(text="✅ Buckets cargados")
     else:
         label_confirm.configure(text="❌ No se pudieron cargar buckets")
+
+
+def obtener_carpetas_s3(
+    access_key: str, secret_key: str, region: str, bucket: str
+) -> list[str]:
+    """
+    Obtiene una lista de todas las carpetas (prefixes) dentro de un bucket S3.
+
+    Args:
+        access_key (str): Clave de acceso AWS.
+        secret_key (str): Clave secreta AWS.
+        region (str): Región AWS.
+        bucket (str): Nombre del bucket.
+
+    Returns:
+        list[str]: Lista de rutas de carpetas, como 'imagenes/vacaciones/'.
+    """
+    try:
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region,
+        )
+
+        paginator = s3.get_paginator("list_objects_v2")
+        pages = paginator.paginate(Bucket=bucket)
+
+        carpetas = set()
+
+        for page in pages:
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                parts = key.split("/")[:-1]
+                for i in range(1, len(parts) + 1):
+                    ruta_partes = parts[:i]
+                    # Verifica si alguno de los niveles de esta ruta es un UUID
+                    if any(es_uuid(p) for p in ruta_partes):
+                        continue  # Omitimos rutas que contienen UUIDs
+                    ruta = "/".join(ruta_partes) + "/"
+                    carpetas.add(ruta)
+        return sorted(list(carpetas))
+
+    except Exception as e:
+        print(f"❌ Error al obtener carpetas: {e}")
+        return []

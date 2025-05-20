@@ -5,7 +5,6 @@ from typing import Any, Dict
 
 import customtkinter
 
-from s3.upload import hacer_publico_ultimo_archivo
 from services.uploader import subir_archivo_worker
 from widgets.loader import crear_loader_padre, mostrar_loader
 from gui.actions import copiar_url, seleccionar_archivo, actualizar_url_preliminar
@@ -34,9 +33,6 @@ def crear_tab_subir(
     frame_nombre = customtkinter.CTkFrame(tab)
     frame_nombre.pack(pady=5)
 
-    customtkinter.CTkLabel(frame_nombre, text="Nombre del Archivo").grid(
-        row=0, column=0, padx=5, pady=5, sticky="e"
-    )
     textbox_name = customtkinter.CTkEntry(
         frame_nombre, placeholder_text="Nombre del Archivo", width=300
     )
@@ -44,12 +40,38 @@ def crear_tab_subir(
 
     title = customtkinter.CTkLabel(tab, text="URL preliminar:")
     title.pack(pady=(5, 0))
+
     label_url_preliminar = customtkinter.CTkLabel(tab, text="")
     label_url_preliminar.pack(pady=(5, 0))
 
+    customtkinter.CTkLabel(tab, text="Carpeta destino (dentro del bucket)").pack(
+        pady=(5, 0)
+    )
+
+    carpeta_seleccionada = "/"
+
+    def on_carpeta_change(value):
+        nonlocal carpeta_seleccionada
+        carpeta_seleccionada = value
+        actualizar_url_preliminar(
+            textbox_name, label_url_preliminar, refs, carpeta_seleccionada
+        )
+
+    menu_carpeta = customtkinter.CTkOptionMenu(
+        tab, values=["/"], command=on_carpeta_change
+    )
+    menu_carpeta.pack(pady=(5, 10))
+    menu_carpeta.set("/")
+
+    textbox_name_file = customtkinter.CTkEntry(
+        frame_nombre, placeholder_text="Nombre del Archivo", width=300
+    )
+
     textbox_name.bind(
         "<KeyRelease>",
-        lambda *_: actualizar_url_preliminar(textbox_name, label_url_preliminar, refs),
+        lambda *_: actualizar_url_preliminar(
+            textbox_name, label_url_preliminar, refs, carpeta_seleccionada
+        ),
     )
 
     # URL
@@ -61,19 +83,13 @@ def crear_tab_subir(
     boton_copiar = customtkinter.CTkButton(tab, text="Copiar URL", state="disabled")
     boton_copiar.pack(pady=5)
 
-    es_publico = customtkinter.CTkCheckBox(tab, text="¿Hacer público?")
-    es_publico.select()
-    es_publico.pack(pady=5)
-
     boton_seleccionar = customtkinter.CTkButton(
         tab, text="Seleccionar archivo", state="disabled"
     )
     boton_subir = customtkinter.CTkButton(tab, text="Subir archivo", state="disabled")
-    boton_publico = customtkinter.CTkButton(tab, text="Hacer público", state="disabled")
 
     boton_seleccionar.pack(pady=10)
     boton_subir.pack(pady=10)
-    boton_publico.pack(pady=5)
 
     archivo_seleccionado = None
 
@@ -84,10 +100,11 @@ def crear_tab_subir(
             textbox_name,
             textbox_url,
             boton_subir,
-            boton_publico,
             boton_copiar,
         )
-        actualizar_url_preliminar(textbox_name, label_url_preliminar, refs)
+        actualizar_url_preliminar(
+            textbox_name, label_url_preliminar, refs, carpeta_seleccionada
+        )
 
     # ---- Conectar callbacks (lambda o funciones aparte) ----
     boton_seleccionar.configure(command=seleccionar_y_guardar)
@@ -105,12 +122,11 @@ def crear_tab_subir(
                 "entry_region": refs["entry_region"],
                 "menu_bucket": refs["menu_bucket"],
                 "textbox_name_file": textbox_name,
-                "es_publico": es_publico,
                 "label_archivo": label_archivo,
                 "textbox_url": textbox_url,
                 "boton_subir": boton_subir,
                 "boton_copiar": boton_copiar,
-                "boton_hacer_publico": boton_publico,
+                "carpeta_seleccionada": carpeta_seleccionada,
                 "loader": loader,
                 "root": root,
             },
@@ -121,18 +137,6 @@ def crear_tab_subir(
 
     boton_copiar.configure(command=lambda: copiar_url(root, textbox_url, label_archivo))
 
-    boton_publico.configure(
-        command=lambda: hacer_publico_ultimo_archivo(
-            textbox_url,
-            label_archivo,
-            refs["entry_access"],
-            refs["entry_secret"],
-            refs["entry_region"],
-            refs["menu_bucket"],
-            boton_publico,
-        )
-    )
-
     # Devolver referencias compartidas
     return {
         "title": title,
@@ -140,9 +144,9 @@ def crear_tab_subir(
         "textbox_name": textbox_name,
         "textbox_url": textbox_url,
         "boton_subir": boton_subir,
-        "boton_publico": boton_publico,
         "boton_copiar": boton_copiar,
-        "es_publico": es_publico,
         "boton_seleccionar": boton_seleccionar,
         "label_url_preliminar": label_url_preliminar,
+        "textbox_name_file": textbox_name_file,
+        "menu_carpeta": menu_carpeta,
     }

@@ -16,7 +16,6 @@ def seleccionar_archivo(
     textbox_name_file: customtkinter.CTkEntry,
     textbox_url: customtkinter.CTkTextbox,
     boton_subir: customtkinter.CTkButton,
-    boton_hacer_publico: customtkinter.CTkButton,
     boton_copiar: customtkinter.CTkButton,
 ):
     """
@@ -28,7 +27,6 @@ def seleccionar_archivo(
         textbox_name_file (CTkEntry): Entrada donde se mostrará el nombre del archivo.
         textbox_url (CTkTextbox): Cuadro de texto para la URL.
         boton_subir (CTkButton): Botón para subir el archivo.
-        boton_hacer_publico (CTkButton): Botón para hacer público el archivo.
         boton_copiar (CTkButton): Botón para copiar la URL.
 
     Returns:
@@ -48,7 +46,6 @@ def seleccionar_archivo(
         textbox_url.configure(state="disabled")
 
         boton_subir.configure(state="normal")
-        boton_hacer_publico.configure(state="disabled")
         boton_copiar.configure(state="disabled")
         return archivo
     label_archivo.configure(text="El archivo seleccionado no es válido.")
@@ -93,9 +90,11 @@ def actualizar_url_preliminar(
     textbox_name: customtkinter.CTkEntry,
     label_url_preliminar: customtkinter.CTkLabel,
     refs: Dict[str, Any],
+    carpeta_seleccionada: str,
 ) -> None:
     """
-    Actualiza la etiqueta de URL preliminar con base en el nombre del archivo y configuración actual.
+    Actualiza la etiqueta de URL preliminar con base
+    en el nombre del archivo y configuración actual.
 
     Args:
         textbox_name (CTkEntry): Campo donde se escribe el nombre del archivo.
@@ -105,36 +104,16 @@ def actualizar_url_preliminar(
     """
     nombre_archivo = textbox_name.get().strip()
     if not nombre_archivo:
-        label_url_preliminar.configure(text="URL preliminar:")
+        label_url_preliminar.configure(text="")
         return
+    nombre_sin_ext = os.path.splitext(nombre_archivo)[0].strip()
+    nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
+    nombre_sin_ext = nombre_sin_ext.lower()
 
     bucket = refs["menu_bucket"].get()
     region = refs["entry_region"].get()
-    url = generar_url_preliminar(bucket, region, nombre_archivo)
+    url = f"{bucket}.s3.{region}.amazonaws.com"
 
-    label_url_preliminar.configure(text=f"🌐{url}")
-
-
-def generar_url_preliminar(bucket: str, region: str, nombre_usuario: str) -> str:
-    """
-    Genera una URL preliminar como la que tendría el archivo en Amazon S3,
-    aplicando la misma lógica de limpieza que se usa en la subida real.
-
-    Args:
-        bucket (str): Nombre del bucket.
-        region (str): Región de AWS.
-        nombre_usuario (str): Nombre escrito por el usuario en el textbox.
-        archivo_seleccionado (str): Ruta del archivo real seleccionado (para extraer la extensión real).
-
-    Returns:
-        str: URL preliminar.
-    """
-    # Quitar extensión escrita por el usuario, si la puso mal
-    nombre_sin_ext = os.path.splitext(nombre_usuario)[0].strip()
-    nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
-
-    # Unir nombre limpio + extensión real, en minúsculas
-    nombre_objeto = f"{nombre_sin_ext}".lower()
-
-    # Armar URL preliminar
-    return f"{bucket}.s3.{region}.amazonaws.com/{nombre_objeto}"
+    label_url_preliminar.configure(
+        text=f"🌐{url}{carpeta_seleccionada}{nombre_sin_ext}"
+    )
