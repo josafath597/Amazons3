@@ -4,9 +4,10 @@ import json
 import os
 from typing import Any, Dict
 import boto3
-from botocore.exceptions import ClientError
-
 import customtkinter
+from botocore.exceptions import ClientError
+from s3.client import obtener_carpetas_s3
+
 
 CONFIG_FILE = "aws_config.json"
 config = {"access_key": "", "secret_key": "", "bucket": "", "region": "us-east-1"}
@@ -82,6 +83,16 @@ def guardar_config(
         refs["textbox_url"].configure(state="disabled")
     if "label_archivo" in refs:
         refs["label_archivo"].configure(text="Ningún archivo seleccionado aún.")
+    if "menu_carpeta" in refs and config_esta_completa(config):
+        carpetas = obtener_carpetas_s3(
+            config["access_key"],
+            config["secret_key"],
+            config["region"],
+            config["bucket"],
+        )
+        opciones = ["/"] + carpetas
+        refs["menu_carpeta"].configure(values=opciones)
+        refs["menu_carpeta"].set("/")
     for k in ("boton_copiar", "boton_publico", "boton_subir"):
         if k in refs:
             refs[k].configure(state="disabled")

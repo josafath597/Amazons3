@@ -2,6 +2,7 @@
 como seleccionar archivos y copiar URLs."""
 
 import os
+import re
 from tkinter import filedialog
 from typing import Any, Dict
 
@@ -15,7 +16,6 @@ def seleccionar_archivo(
     textbox_name_file: customtkinter.CTkEntry,
     textbox_url: customtkinter.CTkTextbox,
     boton_subir: customtkinter.CTkButton,
-    boton_hacer_publico: customtkinter.CTkButton,
     boton_copiar: customtkinter.CTkButton,
 ):
     """
@@ -27,7 +27,6 @@ def seleccionar_archivo(
         textbox_name_file (CTkEntry): Entrada donde se mostrará el nombre del archivo.
         textbox_url (CTkTextbox): Cuadro de texto para la URL.
         boton_subir (CTkButton): Botón para subir el archivo.
-        boton_hacer_publico (CTkButton): Botón para hacer público el archivo.
         boton_copiar (CTkButton): Botón para copiar la URL.
 
     Returns:
@@ -47,7 +46,6 @@ def seleccionar_archivo(
         textbox_url.configure(state="disabled")
 
         boton_subir.configure(state="normal")
-        boton_hacer_publico.configure(state="disabled")
         boton_copiar.configure(state="disabled")
         return archivo
     label_archivo.configure(text="El archivo seleccionado no es válido.")
@@ -86,3 +84,36 @@ def limpiar_tab_subir(refs: Dict[str, Any]) -> None:
     for k in ("boton_copiar", "boton_publico", "boton_subir"):
         if k in refs:
             refs[k].configure(state="disabled")
+
+
+def actualizar_url_preliminar(
+    textbox_name: customtkinter.CTkEntry,
+    label_url_preliminar: customtkinter.CTkLabel,
+    refs: Dict[str, Any],
+    carpeta_seleccionada: str,
+) -> None:
+    """
+    Actualiza la etiqueta de URL preliminar con base
+    en el nombre del archivo y configuración actual.
+
+    Args:
+        textbox_name (CTkEntry): Campo donde se escribe el nombre del archivo.
+        label_url_preliminar (CTkLabel): Label donde se mostrará la URL preliminar.
+        refs (Dict[str, Any]): Diccionario con entradas de configuración (bucket, región, etc).
+        archivo_seleccionado (str): Ruta real del archivo seleccionado.
+    """
+    nombre_archivo = textbox_name.get().strip()
+    if not nombre_archivo:
+        label_url_preliminar.configure(text="")
+        return
+    nombre_sin_ext = os.path.splitext(nombre_archivo)[0].strip()
+    nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
+    nombre_sin_ext = nombre_sin_ext.lower()
+
+    bucket = refs["menu_bucket"].get()
+    region = refs["entry_region"].get()
+    url = f"{bucket}.s3.{region}.amazonaws.com"
+
+    label_url_preliminar.configure(
+        text=f"🌐{url}{carpeta_seleccionada}{nombre_sin_ext}"
+    )

@@ -16,16 +16,18 @@ def mostrar_ventana() -> None:
     incluyendo las pestañas de subir y configuración.
     """
     app = customtkinter.CTk()
-    app.geometry("600x550")
-    app.resizable(False, False)
+    app.geometry("600x650")
+    app.minsize(600, 650)
+    app.resizable(True, True)
     app.title("Subir Archivo a AWS")
+    app.iconbitmap("./AWS-Cloud-logo_32.ico")
 
     # Encabezado
     customtkinter.CTkLabel(app, text="Subir Archivo a Amazon S3").pack(pady=10)
 
     # Pestañas
-    tabview = customtkinter.CTkTabview(app, width=690, height=550)
-    tabview.pack(padx=10, pady=10)
+    tabview = customtkinter.CTkTabview(app)
+    tabview.pack(padx=10, pady=10, fill="both", expand=True)
 
     # --- Pestaña SUBIR ---
     tab_subir = tabview.add("Subir archivo")
