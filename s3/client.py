@@ -1,12 +1,31 @@
 """Módulo para obtener y actualizar la lista de buckets desde Amazon S3 en la interfaz gráfica."""
 
 from typing import List
-
+from botocore.client import BaseClient
+from botocore.exceptions import BotoCoreError, ClientError, PaginationError
 import boto3
-import boto3.exceptions
 import customtkinter
-from botocore.exceptions import BotoCoreError, ClientError
 from core.utils import es_uuid
+
+
+def make_s3_client(access: str, secret: str, region: str) -> BaseClient:
+    """
+    Crea el cliente de amazon
+
+    Args:
+        access_key (str): Clave de acceso de AWS.
+        secret_key (str): Clave secreta de AWS.
+        region (str): Región de AWS.
+
+    Returns:
+        BaseClient: Cliente de s3.
+    """
+    return boto3.client(
+        "s3",
+        aws_access_key_id=access,
+        aws_secret_access_key=secret,
+        region_name=region,
+    )
 
 
 def obtener_buckets(access_key: str, secret_key: str, region: str) -> List[str]:
@@ -23,12 +42,7 @@ def obtener_buckets(access_key: str, secret_key: str, region: str) -> List[str]:
         o una lista vacía en caso de error.
     """
     try:
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            region_name=region,
-        )
+        s3 = make_s3_client(access_key, secret_key, region)
         response = s3.list_buckets()
         nombres = [bucket["Name"] for bucket in response["Buckets"]]
         return nombres
@@ -81,13 +95,7 @@ def obtener_carpetas_s3(
         list[str]: Lista de rutas de carpetas, como 'imagenes/vacaciones/'.
     """
     try:
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            region_name=region,
-        )
-
+        s3 = make_s3_client(access_key, secret_key, region)
         paginator = s3.get_paginator("list_objects_v2")
         pages = paginator.paginate(Bucket=bucket)
 
@@ -106,6 +114,30 @@ def obtener_carpetas_s3(
                     carpetas.add(ruta)
         return sorted(list(carpetas))
 
-    except Exception as e:
+    except (BotoCoreError, ClientError, PaginationError) as e:
         print(f"❌ Error al obtener carpetas: {e}")
         return []
+
+
+def validar_config_aws(
+    access_key: str, secret_key: str, region: str, bucket: str
+) -> bool:
+    """
+    Valida si la configuración de AWS es correcta intentando acceder al bucket.
+
+    Args:
+        access_key (str): Clave de acceso AWS.
+        secret_key (str): Clave secreta AWS.
+        region (str): Región configurada.
+        bucket (str): Nombre del bucket a validar.
+
+    Returns:
+        bool: True si la configuración es válida, False si hay error.
+    """
+    try:
+        s3 = make_s3_client(access_key, secret_key, region)
+        s3.head_bucket(Bucket=bucket)
+        return True
+    except ClientError as e:
+        print(f"❌ Error al validar configuración AWS: {e}")
+        return False

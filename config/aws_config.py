@@ -2,12 +2,10 @@
 
 import json
 import os
-from typing import Any, Dict
-import boto3
+from typing import Any, Dict, List
 import customtkinter
-from botocore.exceptions import ClientError
-from s3.client import obtener_carpetas_s3
-
+from s3.client import validar_config_aws, obtener_carpetas_s3
+from gui.utils import set_menu_carpeta
 
 CONFIG_FILE = "aws_config.json"
 config = {"access_key": "", "secret_key": "", "bucket": "", "region": "us-east-1"}
@@ -34,6 +32,20 @@ def cargar_config_archivo():
             print("⚠️ El archivo de configuración está vacío o dañado. Se ignorará.")
             return {}
     return {}
+
+
+def cargar_carpetas(refs: Dict[str, Any]) -> None:
+    """Descarga los prefijos del bucket y los inyecta en el OptionMenu de carpetas."""
+    if "menu_carpeta" not in refs or not config_esta_completa(config):
+        return
+
+    carpetas: List[str] = obtener_carpetas_s3(
+        config["access_key"],
+        config["secret_key"],
+        config["region"],
+        config["bucket"],
+    )
+    set_menu_carpeta(refs, carpetas)
 
 
 def guardar_config(
@@ -83,16 +95,7 @@ def guardar_config(
         refs["textbox_url"].configure(state="disabled")
     if "label_archivo" in refs:
         refs["label_archivo"].configure(text="Ningún archivo seleccionado aún.")
-    if "menu_carpeta" in refs and config_esta_completa(config):
-        carpetas = obtener_carpetas_s3(
-            config["access_key"],
-            config["secret_key"],
-            config["region"],
-            config["bucket"],
-        )
-        opciones = ["/"] + carpetas
-        refs["menu_carpeta"].configure(values=opciones)
-        refs["menu_carpeta"].set("/")
+    cargar_carpetas(refs)
     for k in ("boton_copiar", "boton_publico", "boton_subir"):
         if k in refs:
             refs[k].configure(state="disabled")
@@ -111,32 +114,3 @@ def limpiar_campos(
     entry_region.delete(0, "end")
     menu_bucket.set("")
     label_confirm.configure(text="")
-
-
-def validar_config_aws(
-    access_key: str, secret_key: str, region: str, bucket: str
-) -> bool:
-    """
-    Valida si la configuración de AWS es correcta intentando acceder al bucket.
-
-    Args:
-        access_key (str): Clave de acceso AWS.
-        secret_key (str): Clave secreta AWS.
-        region (str): Región configurada.
-        bucket (str): Nombre del bucket a validar.
-
-    Returns:
-        bool: True si la configuración es válida, False si hay error.
-    """
-    try:
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            region_name=region,
-        )
-        s3.head_bucket(Bucket=bucket)
-        return True
-    except ClientError as e:
-        print(f"❌ Error al validar configuración AWS: {e}")
-        return False

@@ -12,7 +12,7 @@ from config.aws_config import (
     limpiar_campos,
     config_esta_completa,
 )
-from s3.client import obtener_carpetas_s3
+from config.aws_config import cargar_carpetas
 from services.uploader import actualizar_lista_worker
 from widgets.loader import crear_loader_grid, mostrar_loader_grid
 
@@ -65,16 +65,7 @@ def crear_tab_config(tab: customtkinter.CTkFrame, refs: Dict[str, Any]) -> None:
         menu_bucket.set(datos.get("bucket", ""))
         config.update(datos)
         # Llenar menú de carpetas si la config es válida y ya se cargó
-        if "menu_carpeta" in refs and config_esta_completa(config):
-            carpetas = obtener_carpetas_s3(
-                config["access_key"],
-                config["secret_key"],
-                config["region"],
-                config["bucket"],
-            )
-            opciones = ["/"] + carpetas
-            refs["menu_carpeta"].configure(values=opciones)
-            refs["menu_carpeta"].set("/")
+        cargar_carpetas(refs)
         if "boton_seleccionar" in refs:
             estado = "normal" if config_esta_completa(config) else "disabled"
             refs["boton_seleccionar"].configure(state=estado)

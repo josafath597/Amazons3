@@ -3,10 +3,12 @@ gestionar su visibilidad pública desde la interfaz gráfica."""
 
 import os
 import re
+import mimetypes
 import boto3
 import boto3.exceptions
+from botocore.exceptions import BotoCoreError, ClientError
 import customtkinter
-import mimetypes
+from s3.client import make_s3_client
 
 
 def url_es_de_s3(url: str) -> bool:
@@ -50,11 +52,8 @@ def hacer_publico_ultimo_archivo(
         label_archivo.configure(text="⚠️ La URL no parece ser de Amazon S3.")
         return
     try:
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=entry_access_key.get(),
-            aws_secret_access_key=entry_secret_key.get(),
-            region_name=entry_region.get(),
+        s3 = make_s3_client(
+            entry_access_key.get(), entry_secret_key.get(), entry_region.get()
         )
 
         nombre_bucket = menu_bucket.get()
@@ -77,6 +76,7 @@ def subir_archivo_a_s3(
     textbox_name_file: customtkinter.CTkEntry,
     label_archivo: customtkinter.CTkLabel,
     textbox_url: customtkinter.CTkTextbox,
+    # pylint: disable=unused-argument
     boton_subir: customtkinter.CTkButton,
     boton_copiar: customtkinter.CTkButton,
     carpeta_seleccionada: str,
@@ -100,11 +100,8 @@ def subir_archivo_a_s3(
         return
 
     try:
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=entry_access_key.get(),
-            aws_secret_access_key=entry_secret_key.get(),
-            region_name=entry_region.get(),
+        s3 = make_s3_client(
+            entry_access_key.get(), entry_secret_key.get(), entry_region.get()
         )
 
         nombre_bucket = menu_bucket.get()
@@ -142,5 +139,5 @@ def subir_archivo_a_s3(
         textbox_url.configure(state="disabled")
         # boton_subir.configure(state="disabled")
         boton_copiar.configure(state="normal")
-    except Exception as e:
+    except (BotoCoreError, ClientError) as e:
         label_archivo.configure(text=f"❌ Error al subir archivo:\n{e}")

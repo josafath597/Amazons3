@@ -1,7 +1,7 @@
 """Este módulo contiene funciones relacionadas con el cierre de la aplicación."""
 
-import customtkinter
 import re
+import customtkinter
 
 
 def cerrar_app(app: customtkinter):
@@ -11,6 +11,7 @@ def cerrar_app(app: customtkinter):
 
 
 def es_uuid(texto: str) -> bool:
+    """Verifica si un texto es una uuid"""
     return bool(
         re.fullmatch(
             r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}",
