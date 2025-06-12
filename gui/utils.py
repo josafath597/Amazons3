@@ -15,3 +15,6 @@ def set_menu_carpeta(refs: Dict[str, Any], carpetas: List[str]) -> None:
     opciones = ["/"] + carpetas
     refs["menu_carpeta"].configure(values=opciones)
     refs["menu_carpeta"].set("/")
+
+    if "dropdown_carpeta" in refs:
+        refs["dropdown_carpeta"].configure(values=opciones)

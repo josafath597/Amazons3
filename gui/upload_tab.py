@@ -8,6 +8,7 @@ import customtkinter
 from services.uploader import subir_archivo_worker
 from widgets.loader import crear_loader_padre, mostrar_loader
 from gui.actions import copiar_url, seleccionar_archivo, actualizar_url_preliminar
+from CTkScrollableDropdown import CTkScrollableDropdown
 
 
 def crear_tab_subir(
@@ -52,16 +53,29 @@ def crear_tab_subir(
 
     def on_carpeta_change(value):
         nonlocal carpeta_seleccionada
+        menu_carpeta.set(value)
         carpeta_seleccionada = value
         actualizar_url_preliminar(
             textbox_name, label_url_preliminar, refs, carpeta_seleccionada
         )
+        tab.focus_set()
 
-    menu_carpeta = customtkinter.CTkOptionMenu(
-        tab, values=["/"], command=on_carpeta_change
-    )
+    menu_carpeta = customtkinter.CTkComboBox(tab, values=["/"])
     menu_carpeta.pack(pady=(5, 10))
     menu_carpeta.set("/")
+
+    dropdown_carpeta = CTkScrollableDropdown(
+        attach=menu_carpeta,
+        values=["/"],  # se actualizará luego
+        width=400,  # ancho del popup
+        height=500,  # alto del popup
+        x=-130,  # desplaza a la izquierda ≈ (400-240)/2
+        y=30,  # unos píxeles debajo del OptionMenu,
+        justify="left",
+        button_color="transparent",
+        command=on_carpeta_change,  # clic o Enter → callback
+        resize=False,
+    )
 
     textbox_name_file = customtkinter.CTkEntry(
         frame_nombre, placeholder_text="Nombre del Archivo", width=300
@@ -149,4 +163,5 @@ def crear_tab_subir(
         "label_url_preliminar": label_url_preliminar,
         "textbox_name_file": textbox_name_file,
         "menu_carpeta": menu_carpeta,
+        "dropdown_carpeta": dropdown_carpeta,
     }

@@ -20,7 +20,6 @@ def mostrar_ventana() -> None:
     app.minsize(600, 650)
     app.resizable(True, True)
     app.title("Subir Archivo a AWS")
-    app.iconbitmap("./AWS-Cloud-logo_32.ico")
 
     # Encabezado
     customtkinter.CTkLabel(app, text="Subir Archivo a Amazon S3").pack(pady=10)

@@ -110,15 +110,14 @@ def subir_archivo_a_s3(
         nombre_sin_ext = os.path.splitext(nombre_personalizado)[0].strip()
         # 🔧 Reemplazamos espacios por guiones bajos y limpiamos caracteres especiales
         nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
-        # Obtenemos la extensión real del archivo
-        extension_real = os.path.splitext(archivo_seleccionado)[1].lower()
         # Unimos nombre limpio + extensión real y pasamos todo a minúsculas
-        nombre_objeto = f"{nombre_sin_ext}{extension_real}".lower()
+        nombre_objeto = f"{nombre_sin_ext}".lower()
         nombre_objeto = f"{carpeta_seleccionada}{nombre_objeto}".strip("/")
         content_type = (
             mimetypes.guess_type(archivo_seleccionado)[0] or "application/octet-stream"
         )
         extra_args = {"ContentType": content_type}
+        extra_args["ACL"] = "public-read"
 
         with open(archivo_seleccionado, "rb") as f:
             s3.upload_fileobj(
