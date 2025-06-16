@@ -60,9 +60,19 @@ def crear_tab_subir(
         )
         tab.focus_set()
 
-    menu_carpeta = customtkinter.CTkComboBox(tab, values=["/"])
+    menu_carpeta = customtkinter.CTkComboBox(tab, values=["/"], width=250)
     menu_carpeta.pack(pady=(5, 10))
     menu_carpeta.set("/")
+
+    def on_menu_carpeta_key(event=None):
+        nonlocal carpeta_seleccionada
+        value = menu_carpeta.get()
+        carpeta_seleccionada = value
+        actualizar_url_preliminar(
+            textbox_name, label_url_preliminar, refs, carpeta_seleccionada
+        )
+
+    menu_carpeta.bind("<KeyRelease>", on_menu_carpeta_key)
 
     dropdown_carpeta = CTkScrollableDropdown(
         attach=menu_carpeta,

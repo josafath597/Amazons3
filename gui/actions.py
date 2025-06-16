@@ -37,8 +37,10 @@ def seleccionar_archivo(
     if archivo_es_valido(archivo):
         label_archivo.configure(text=f"Archivo seleccionado:\n{archivo}")
 
-        # Establece por defecto el nombre original en el textbox (sin la ruta)
-        nombre_original = os.path.basename(archivo)
+        # Establece por defecto el nombre original en el textbox (sin la ruta
+        # ni la extensión)
+        nombre_original = os.path.splitext(os.path.basename(archivo))[0]
+
         textbox_name_file.delete(0, "end")
         textbox_name_file.insert(0, nombre_original)
 
@@ -98,11 +100,11 @@ def actualizar_url_preliminar(
     nombre_sin_ext = os.path.splitext(nombre_archivo)[0].strip()
     nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
     nombre_sin_ext = nombre_sin_ext.lower()
-
     bucket = refs["menu_bucket"].get()
     region = refs["entry_region"].get()
     url = f"{bucket}.s3.{region}.amazonaws.com"
+    resultado = "" if carpeta_seleccionada[0] == "/" else "/"
 
     label_url_preliminar.configure(
-        text=f"🌐{url}{carpeta_seleccionada}{nombre_sin_ext}"
+        text=f"🌐{url}{resultado}{carpeta_seleccionada}{nombre_sin_ext}"
     )

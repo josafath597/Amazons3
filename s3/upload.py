@@ -112,7 +112,8 @@ def subir_archivo_a_s3(
         nombre_sin_ext = re.sub(r"[^\w\-]", "_", nombre_sin_ext.replace(" ", "_"))
         # Unimos nombre limpio + extensión real y pasamos todo a minúsculas
         nombre_objeto = f"{nombre_sin_ext}".lower()
-        nombre_objeto = f"{carpeta_seleccionada}{nombre_objeto}".strip("/")
+        backslash = "/" if not carpeta_seleccionada.endswith("/") else ""
+        nombre_objeto = f"{carpeta_seleccionada}{backslash}{nombre_objeto}".strip("/")
         content_type = (
             mimetypes.guess_type(archivo_seleccionado)[0] or "application/octet-stream"
         )
