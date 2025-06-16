@@ -5,11 +5,16 @@ import customtkinter
 
 from s3.client import actualizar_lista_buckets
 from s3.upload import subir_archivo_a_s3
+from config.aws_config import cargar_carpetas
 from widgets.loader import ocultar_loader_grid, ocultar_loader
 
 
 def subir_archivo_worker(
-    *args, loader: customtkinter.CTkProgressBar, root: customtkinter.CTk, **kwargs
+    *args,
+    loader: customtkinter.CTkProgressBar,
+    root: customtkinter.CTk,
+    refs: dict,
+    **kwargs,
 ) -> None:
     """
     Ejecuta la función subir_archivo_a_s3 en un hilo separado y oculta el loader al finalizar.
@@ -18,6 +23,7 @@ def subir_archivo_worker(
         *args: Argumentos posicionales para subir_archivo_a_s3.
         loader (CTkProgressBar): Barra de progreso a ocultar.
         root (CTk): Ventana principal, usada para volver al hilo principal.
+        refs (dict): Referencias a widgets compartidos.
         **kwargs: Argumentos con nombre para subir_archivo_a_s3.
     """
     try:
@@ -25,6 +31,7 @@ def subir_archivo_worker(
     finally:
         # volvemos al hilo principal para tocar la GUI
         root.after(0, lambda: ocultar_loader(loader))
+        root.after(0, lambda: cargar_carpetas(refs))
 
 
 def actualizar_lista_worker(

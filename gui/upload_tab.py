@@ -151,6 +151,7 @@ def crear_tab_subir(
                 "boton_subir": boton_subir,
                 "boton_copiar": boton_copiar,
                 "carpeta_seleccionada": carpeta_seleccionada,
+                "refs": refs,
                 "loader": loader,
                 "root": root,
             },
