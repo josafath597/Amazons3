@@ -7,6 +7,7 @@ import customtkinter
 
 from services.uploader import subir_archivo_worker
 from widgets.loader import crear_loader_padre, mostrar_loader
+from widgets.preview import crear_preview
 from gui.actions import copiar_url, seleccionar_archivo, actualizar_url_preliminar
 from CTkScrollableDropdown import CTkScrollableDropdown
 
@@ -134,6 +135,7 @@ def crear_tab_subir(
     boton_seleccionar.configure(command=seleccionar_y_guardar)
 
     loader = crear_loader_padre(tab)
+    preview = crear_preview(tab)
 
     def lanzar_subida():
         mostrar_loader(loader)
@@ -175,4 +177,5 @@ def crear_tab_subir(
         "textbox_name_file": textbox_name_file,
         "menu_carpeta": menu_carpeta,
         "dropdown_carpeta": dropdown_carpeta,
+        "preview": preview,
     }

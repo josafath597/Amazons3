@@ -7,6 +7,7 @@ from s3.client import actualizar_lista_buckets
 from s3.upload import subir_archivo_a_s3
 from config.aws_config import cargar_carpetas
 from widgets.loader import ocultar_loader_grid, ocultar_loader
+from widgets.preview import mostrar_preview
 
 
 def subir_archivo_worker(
@@ -29,7 +30,12 @@ def subir_archivo_worker(
         **kwargs: Argumentos con nombre para subir_archivo_a_s3.
     """
     try:
-        subir_archivo_a_s3(*args, carpeta_seleccionada=carpeta_seleccionada, **kwargs)
+        subir_archivo_a_s3(
+            *args, carpeta_seleccionada=carpeta_seleccionada, **kwargs
+        )
+        archivo = kwargs.get("archivo_seleccionado") or (args[0] if args else None)
+        if archivo and "preview" in refs:
+            root.after(0, lambda p=archivo: mostrar_preview(refs["preview"], p))
     finally:
         # volvemos al hilo principal para tocar la GUI
         root.after(0, lambda: ocultar_loader(loader))
